@@ -25,7 +25,6 @@ docker compose up -d
 
 ## Перспективы
 - Отправка сообщений по топикам в группе
-- Docker
 
 ## Послесловие
 Создано при помощи библиотеки [PyMax](https://github.com/ink-developer/PyMax).
