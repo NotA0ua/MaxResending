@@ -1,7 +1,12 @@
+from io import BytesIO
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import InputFileUnion, InputMediaPhoto, InputMediaVideo
+from aiogram.types import (
+    BufferedInputFile,
+    InputMediaPhoto,
+    InputMediaVideo,
+)
 from pymax.types import FileAttach, PhotoAttach, VideoAttach
 from app import BOT_TOKEN
 
@@ -19,29 +24,30 @@ async def send_message(chat_id: int | str, text: str):
 async def send_attaches(
     chat_id: int | str,
     text: str,
-    attaches: list[
-        tuple[InputFileUnion, PhotoAttach | VideoAttach | FileAttach | None]
-    ],
+    attaches: list[tuple[BytesIO, PhotoAttach | VideoAttach | FileAttach | None]],
 ) -> None:
     media = list()
     for i, attach in enumerate(attaches):
         attach_type = attach[1]
         attach = attach[0]
+
+        file = BufferedInputFile(attach.getvalue(), filename=attach.name)
+
         if attach_type == FileAttach:
-            await bot.send_document(chat_id, attach, caption=text)
+            await bot.send_document(chat_id, file, caption=text)
             continue
 
         elif attach_type == PhotoAttach:
             if i == 0:
-                media.append(InputMediaPhoto(media=attach, caption=text))
+                media.append(InputMediaPhoto(media=file, caption=text))
             else:
-                media.append(InputMediaPhoto(media=attach))
+                media.append(InputMediaPhoto(media=file))
 
         elif attach_type == VideoAttach:
             if i == 0:
-                media.append(InputMediaVideo(media=attach, caption=text))
+                media.append(InputMediaVideo(media=file, caption=text))
             else:
-                media.append(InputMediaVideo(media=attach))
+                media.append(InputMediaVideo(media=file))
         else:
             return
     if media:

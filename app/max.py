@@ -2,7 +2,6 @@ import asyncio
 from pymax import MaxClient, Message, MessageStatus
 from app import CHATS, GROUP_ID, PHONE_NUMBER
 from app.bot import send_attaches, send_message
-from pathlib import Path
 
 from app.utils import prepare_attaches
 
@@ -41,9 +40,7 @@ async def handle_message(message: Message) -> None:
 
     if message.attaches:
         attaches = await prepare_attaches(client, message)
-        await send_attaches(chat_id=GROUP_ID, text=text, attaches=attaches.keys())  # pyright: ignore
-        for path in attaches.values():
-            Path(path).unlink()
+        await send_attaches(chat_id=GROUP_ID, text=text, attaches=attaches)  # pyright: ignore
     else:
         await send_message(chat_id=GROUP_ID, text=text)
 
