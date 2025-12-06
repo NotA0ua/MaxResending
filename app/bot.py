@@ -1,4 +1,5 @@
 from io import BytesIO
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -8,6 +9,7 @@ from aiogram.types import (
     InputMediaVideo,
 )
 from pymax.types import FileAttach, PhotoAttach, VideoAttach
+
 from app import BOT_TOKEN
 
 if not BOT_TOKEN:
@@ -26,24 +28,24 @@ async def send_attaches(
     text: str,
     attaches: list[tuple[BytesIO, PhotoAttach | VideoAttach | FileAttach | None]],
 ) -> None:
-    media = list()
+    media = []
     for i, attach in enumerate(attaches):
         attach_type = attach[1]
         attach = attach[0]
 
         file = BufferedInputFile(attach.getvalue(), filename=attach.name)
 
-        if attach_type == FileAttach:
+        if isinstance(attach_type, FileAttach):
             await bot.send_document(chat_id, file, caption=text)
             continue
 
-        elif attach_type == PhotoAttach:
+        if isinstance(attach_type, PhotoAttach):
             if i == 0:
                 media.append(InputMediaPhoto(media=file, caption=text))
             else:
                 media.append(InputMediaPhoto(media=file))
 
-        elif attach_type == VideoAttach:
+        elif isinstance(attach_type, VideoAttach):
             if i == 0:
                 media.append(InputMediaVideo(media=file, caption=text))
             else:

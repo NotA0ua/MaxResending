@@ -1,10 +1,10 @@
 import asyncio
+
 from pymax import MaxClient, Message, MessageStatus
+
 from app import CHATS, GROUP_ID, PHONE_NUMBER
 from app.bot import send_attaches, send_message
-
 from app.utils import prepare_attaches
-
 
 if not PHONE_NUMBER:
     raise ValueError("PHONE_NUMBER is not provided in .env")
@@ -26,21 +26,30 @@ async def handle_message(message: Message) -> None:
     if message.chat_id not in CHATS:
         return
 
-    user = await client.get_user(message.sender)  # pyright: ignore
+    if not message.sender:
+        return
+
+    user = await client.get_user(message.sender)
+
+    if not user:
+        return
 
     message_text = message.text
     if not message.text:
-        message_text = "Пустое сообщение"
-    text = f"```{user.names[0].name}\n{message_text}```"  # pyright: ignore
+        if message.link and message.link.message.text:
+            message_text = message.link.message.text
+        else:
+            message_text = "Пустое сообщение"
+    text = f"```{user.names[0].name if user.names else 'Неизвестный пользователь'}\n{message_text}```"
 
     if message.status == MessageStatus.REMOVED:
         return
-    elif message.status == MessageStatus.EDITED:
+    if message.status == MessageStatus.EDITED:
         text = "✏️ Сообщение было изменено\n" + text
 
     if message.attaches:
         attaches = await prepare_attaches(client, message)
-        await send_attaches(chat_id=GROUP_ID, text=text, attaches=attaches)  # pyright: ignore
+        await send_attaches(chat_id=GROUP_ID, text=text, attaches=attaches)
     else:
         await send_message(chat_id=GROUP_ID, text=text)
 
