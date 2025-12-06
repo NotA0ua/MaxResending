@@ -1,6 +1,6 @@
 import asyncio
 
-from app.bot import dp, bot
+from app.bot import bot, dp
 from app.max import client
 
 
